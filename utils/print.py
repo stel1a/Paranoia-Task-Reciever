@@ -7,7 +7,7 @@ def test_printer_conditions(console, p):
         p.open()
     except Exception as e:
         if "Device not found" in str(e):
-            ui.close(console, "[bold red]the printing device was not found !![/][rgb(80,80,80)]\n\nis it connected?\ndid ya change the 'p' (printer) variable accordingly in the main script?[/]")
+            ui.close(console, "[bold red]the printing device was not found !![/][rgb(150,150,150)]\n\nis it connected?\ndid ya change the 'p' (printer) variable accordingly in the main script?[/]")
         else:
             ui.close(console, "[bold red]an error has occured that isn't caught !![/]\n\n" + str(e))
 
