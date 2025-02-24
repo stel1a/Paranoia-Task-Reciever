@@ -8,19 +8,48 @@ from rich.align import Align
 from rich.console import Console
 from rich.style import Style 
 from rich.table import Table
-
+from rich.rule import Rule
+from rich.padding import Padding
 selected_style = Style(color="white", bgcolor="green", bold=True)
 
 testing = False
 
+def show_tutorial(console: Console):
+    console.clear()
+    console.show_cursor(True)
+    bulletpoints = [
+        "strikethrough (~~) isn't supported in python-escpos, so it inverts the text instead.",
+        "italics (*) are not supported either, so i set them to underline text instead.",
+        
+        "inline text changes are not supported, so you have to declare them in the beginning of each line.\n\n" + 
+        "example: '#* test' sets the text as an underlined header\n" + 
+        "[rgb(150,150,150)]you can also end each line with the modifiers you set too, like [/][green]'#*test*'[/][rgb(150,150,150)] but it's not required. [/]"
+    ]
+
+    console.print(Rule("[bold green]a quick note !![/]"))
+    console.print("this app mainly encourages the use of .md (markdown) files, [s rgb(150,150,150)](but .txt is also supported)[/]", justify="center")
+    console.print(Padding("the library i am using to print these out to thermal printers (python-escpos), does not support a few common things (to my knowledge) that you use in vanilla markdown, so i've had to make some remedies.\n",(2,0,2,0)), justify="center")
+    for point in bulletpoints:
+        console.print(" • " + point)
+    console.print("\n")
+    console.print(Rule("[bold green]^^ please read the message above before we begin !! ^^ [/]"))
+    console.print("\n[yellow]if you would like to see this message again, press [bold](y)[/]")
+    console.print("[s rgb(150,150,150)](or delete the .tutorial_shown file in the tasks folder)[/]")
+    console.print("otherwise, you can press any other key to continue.")
+    try:
+        if not readkey() == "y": # if they don't want to see the message again
+            with open('./tasks/.tutorial_shown', 'a') as f:
+                pass # create empty file
+    except KeyboardInterrupt: # in case they control + c, don't give python error soup.
+        close(console, testing=False)
     # initial run #
-def summon_ui(p, is_testing=False):
+def summon_ui(p, console=Console(), present_tutorial=False, is_testing=False):
     # init variables #
     items = gather_files()
     selected_opt = 0
 
+    if present_tutorial: show_tutorial(console)
     # init console #
-    console = Console()
     console.clear()
     console.show_cursor(False)
     draw_print_options(console, make_print_options(), items, selected_opt)
@@ -50,7 +79,7 @@ def summon_ui(p, is_testing=False):
         print_selected(console, "./tasks/" + items[selected_opt], p, is_testing)
 
         console.print("[bold green]print job seems to have succeeded !![/]")
-        console.print("\n[s rgb(80,80,80)]if ya wanna exit, press q.[/]")
+        console.print("\n[s rgb(150,150,150)]if ya wanna exit, press q.[/]")
         console.print("[bold blue]press any other key to print something else !![/]")
         
         if readkey() == "q": close(console)

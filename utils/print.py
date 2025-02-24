@@ -4,14 +4,6 @@ import utils.ui as ui
 import os
 import re
 
-md_patterns = {
-    "header": "^(#{1,6})\s+(.+)$",
-    "bold": "\*\*(.+?)\*\*|__(.+?)__",
-    "underline": "\*(.+?)\*|_(.+?)_", # italics are not supported in python-escpos, so i opted to use this as underlines.
-    "strikethrough": "~~(.+?)~~",
-}
-#md_regex = re.compile(r'\b(' + '|'.join(md_patterns) + r')\b')
-
 def test_printer_conditions(console, p):
     try:
         p.open()
@@ -20,53 +12,56 @@ def test_printer_conditions(console, p):
             ui.close(console, "[bold red]the printing device was not found !![/][rgb(80,80,80)]\n\nis it connected?\ndid ya change the 'p' (printer) variable accordingly in the main script?[/]")
         else:
             ui.close(console, "[bold red]an error has occured that isn't caught !![/]\n\n" + str(e))
-def handle_md(ln, p):
-    for pat, ex in md_patterns.items():
-        matches = re.findall(ex, ln)
-        if matches:
-            match pat:
-                case "header":
-                    p.set(bold=True, underline=1, align='center')
-                    p.text(matches[0][1])
-                    p.set(bold=False, underline=0, align='left')
-                    break
-                case "bold":
-                    p.set(bold=True)
-                    p.text(matches[0][0])
-                    p.set(bold=False)
-                    break
-                case "underline":
-                    p.set(underline=1)
-                    p.text(matches[0][0])
-                    p.set(underline=0)
-                    break
-                case "strikethrough":
-                    p.set(invert=True)
-                    p.text(matches[0])
-                    p.set(invert=False)
-                    break
-                    ''' if inline text changes are supported '''
-                    '''
-                    for m in matches: 
-                        match pat:
-                            case "bold":
-                                p.set(bold=True)
-                                p.text(ln)
-                                p.set(bold=False)
-                            case "underline":
-                    '''
+
+def handle_text_modifiers(ln: str, p):
+    # italics and strikethrough are not supported in python-escpos (to my knowledge),
+    # so i replaced them with underline and invert, respectively.
+    # ---------------------------------------------------------------------------------
+    # counting asterisks is a tacky way to differentiate md "italics" 
+    # (italics not supported in escpos python so i chose to underline instead) and bold, 
+    # but it works for now.
+    star_cnt = 0 
+
+    op = ln
+    for char in ln:
+        match char:
+            case "#": # header
+                p.set(bold=True, underline=1, align='center')
+                op = op[1:].strip()
+
+            case "*": # "italics" or bold
+                star_cnt += 1
+                match star_cnt:
+                    case 1: # reg "italics" 
+                        p.set(underline=1) 
+                    case 2: # reg bold
+                        p.set(underline=0, bold=True)
+                    case 3: # bold and "italic"
+                        p.set(underline=1, bold=True)
+                op = ln.replace("*", "").strip()
+            case "~":
+                p.set(invert=True)
+                op = ln.replace("~~", "").strip()
+            case _:
+                # regular letter, so it just stops setting stuff. 
+                # this is because i don't think inline setting changes are supported in python-escpos,
+                # so i have to set the whole line as such. 
+                break  
+    
+    p.text(op + "\n")
+    p.set(bold=False, underline=0, align='left', invert=False) # return to default
+
 def print_selected(console, filename: str, p, testing=False):
-    tm = []
     try:
         f = open(filename, 'r')
     except FileNotFoundError:
         ui.close(console, "[bold red]file not found !! closing to prevent python error soup.[/]")
-    if filename.endswith(".md"):
-        for ln in f:
-            handle_md(ln, p)
-    else:
-        # plain text #
-        for ln in f:
-            p.text(ln.strip())
-        p.cut()
+    
+    for ln in f:
+        handle_text_modifiers(ln, p)
+
+    p.cut()
+
+    if testing:
+        ui.close(console, testing=testing, msg=str(p.output))
     
