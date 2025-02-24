@@ -8,7 +8,7 @@ a lot of the game requires giving players tasks and passing notes to each other.
 * python-rich (tui)
 * readchar
 
-a test.md file is given as an example of how formatting works, and a tutorial is given on startup which guides ya through the basics. here is a screenshot of that!
+an example.md file is given as an example of how formatting works, and a tutorial is given on startup which guides ya through the basics. here is a screenshot of that!
 
 ![a screenshot of the tutorial that is presented when you first run the 'main.py' script](.tutorial-img.png)
 
