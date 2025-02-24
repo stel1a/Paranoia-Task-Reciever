@@ -40,15 +40,15 @@ def show_tutorial(console: Console):
         if not readkey() == "y": # if they don't want to see the message again
             with open('./tasks/.tutorial_shown', 'a') as f:
                 pass # create empty file
+        else:
+            dont_show_this_session = True
     except KeyboardInterrupt: # in case they control + c, don't give python error soup.
         close(console, testing=False)
     # initial run #
-def summon_ui(p, console=Console(), present_tutorial=False, is_testing=False):
+def summon_ui(p, console=Console(), is_testing=False):
     # init variables #
     items = gather_files()
     selected_opt = 0
-
-    if present_tutorial: show_tutorial(console)
     # init console #
     console.clear()
     console.show_cursor(False)

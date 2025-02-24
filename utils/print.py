@@ -26,7 +26,6 @@ def handle_text_modifiers(ln: str, p):
             case "#": # header
                 p.set(bold=True, underline=1, align='center')
                 op = op[1:].strip()
-
             case "*": # "italics" or bold
                 star_cnt += 1
                 match star_cnt:
@@ -36,10 +35,10 @@ def handle_text_modifiers(ln: str, p):
                         p.set(underline=0, bold=True)
                     case 3: # bold and "italic"
                         p.set(underline=1, bold=True)
-                op = ln.replace("*", "").strip()
+                op = op.replace("*", "").strip()
             case "~":
                 p.set(invert=True)
-                op = ln.replace("~~", "").strip()
+                op = op.replace("~~", "").strip()
             case _:
                 # regular letter, so it just stops setting stuff. 
                 # this is because i don't think inline setting changes are supported in python-escpos,
