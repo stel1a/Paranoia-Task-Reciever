@@ -1,8 +1,6 @@
 # enter virtual environment with 'source ~/.venvs/task_reciever/bin/activate' in bash before executing #
 from escpos import * 
 import utils.ui as ui
-import os
-import re
 
 def test_printer_conditions(console, p):
     try:
