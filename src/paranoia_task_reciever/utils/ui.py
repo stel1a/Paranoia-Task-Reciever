@@ -1,6 +1,6 @@
 import os
-from utils.gather_files import gather_files
-from utils.print import print_selected, test_printer_conditions
+from .gather_files import gather_files
+from .print import print_selected, test_printer_conditions
 import rich.box
 from escpos import * 
 from readchar import readkey, key
@@ -13,6 +13,25 @@ from rich.padding import Padding
 selected_style = Style(color="white", bgcolor="green", bold=True)
 
 testing = False
+
+def create_tasks_folder(console: Console):
+    if len(os.listdir("./")) == 0: os.mkdir("./tasks/")
+    else:
+        console.clear()
+        console.show_cursor(True)
+        console.print(Rule("[bold red]the current directory is not empty !![/]", style=Style(color="red")))
+        console.print("we need to make a 'tasks' folder to store our paranoia tasks that we will give out to our players.", justify="center")
+        console.print("however, your directory is [bold]not empty !![/]", justify="center")
+        console.print(Rule("", style=Style(color="red")))
+        console.print("[yellow]if you would like to create a 'tasks' folder anyway, press [bold](y)[/bold], otherwise press any key to quit. [/]")
+        try:
+            if not readkey() == "y":
+                close(console, testing=False)
+            
+            os.mkdir("./tasks/")
+        except KeyboardInterrupt:
+            close(console, testing=False)
+
 
 def show_tutorial(console: Console):
     console.clear()
@@ -31,20 +50,21 @@ def show_tutorial(console: Console):
     console.print(Padding("the library i am using to print these out to thermal printers (python-escpos), does not support a few common things (to my knowledge) that you use in vanilla markdown, so i've had to make some remedies.\n",(2,0,2,0)), justify="center")
     for point in bulletpoints:
         console.print(" • " + point)
-    console.print("\n")
+
+    console.print("\n[bold yellow]please setup the printer in the main.py file as well (reinstall the script if you change it !!)[/]", justify="center")
     console.print(Rule("[bold green]^^ please read the message above before we begin !! ^^ [/]"))
     console.print("\n[yellow]if you would like to see this message again, press [bold](y)[/]")
     console.print("[s rgb(150,150,150)](or delete the .tutorial_shown file in the tasks folder)[/]")
     console.print("otherwise, you can press any other key to continue.")
+
     try:
         if not readkey() == "y": # if they don't want to see the message again
             with open('./tasks/.tutorial_shown', 'a') as f:
                 pass # create empty file
-        else:
-            dont_show_this_session = True
     except KeyboardInterrupt: # in case they control + c, don't give python error soup.
         close(console, testing=False)
-    # initial run #
+
+
 def summon_ui(p, console=Console(), is_testing=False):
     # init variables #
     items = gather_files()

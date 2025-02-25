@@ -1,0 +1,35 @@
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+
+name = "paranoia_task_reciever"
+version = "1.0"
+packages = ["paranoia_task_reciever", "paranoia_task_reciever.utils"]
+
+authors = [
+    { name = "stella :3c", email="hey@stels.sh"}
+]
+description = "this is a simple little program that prints out .md and .txt files to a esc-pos reciept printer that I made to hand out tasks to the players for my Paranoia TTRPG campaign :3c "
+readme = "README.md"
+requires-python = ">=3.13"
+
+dependencies = [
+    "rich",
+    "python-escpos[all]",
+    "readchar"
+]
+
+
+classifiers = [
+    "Programming Language :: Python :: 3"
+]
+license = "Unlicense"
+
+[project.scripts]
+paranoia = "paranoia_task_reciever.main:main"
+
+[project.urls]
+Homepage = "https://github.com/stel1a/Paranoia-Task-Reciever"
