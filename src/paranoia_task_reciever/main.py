@@ -1,24 +1,12 @@
 import os
 from escpos import * 
 
-from .utils.ui import summon_ui, show_tutorial, create_tasks_folder
+from .utils.ui import summon_ui, show_tutorial, create_tasks_folder, new_printer
 from rich.console import Console
 
 def main() -> None:
-    testing = True
+    testing = False
 
-    # ----------------------------------------------------------------------------------------------------------------------- 
-    # either lookup the idVendor and idProduct for your esc-pos printer online
-    # or run dmesg rq to get that info.
-    # -------------------------------------------------------------------------------
-    # if ya need any help, https://python-escpos.readthedocs.io/en/latest/ may help.
-    #
-    # [if you have a different mark version of the same printer (like TM-T88III), you can just change the profile option 
-    # accordingly without further modification.]
-    # ----------------------------------------------------------------------------------------------------------------------- 
-    """ Seiko Epson Corp. Reciept Printer (EPSON TM-T88IV) """
-    p = printer.Usb(0x04b8,0x0202, profile="TM-T88IV") # idVendor, idProduct, profile
-    # ----------------------------------------------------------------------------------------------------------------------- 
     console = Console()
 
     if testing: p = printer.Dummy()
@@ -26,6 +14,12 @@ def main() -> None:
     if not os.path.exists("./tasks/"):
         create_tasks_folder(console)
 
+    if not os.path.exists("./.printer"):
+        p = new_printer(console)
+    else:
+        f = open("./.printer", "r").read().split(",")
+        opt = list(map(int, f))
+        p = printer.Usb(opt[0], opt[1])
     if not os.path.exists("./tasks/.tutorial_shown"):
         show_tutorial(console)
 

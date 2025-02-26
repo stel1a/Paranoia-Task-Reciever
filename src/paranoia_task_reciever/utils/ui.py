@@ -10,6 +10,7 @@ from rich.style import Style
 from rich.table import Table
 from rich.rule import Rule
 from rich.padding import Padding
+import usb
 selected_style = Style(color="white", bgcolor="green", bold=True)
 
 testing = False
@@ -32,6 +33,103 @@ def create_tasks_folder(console: Console):
         except KeyboardInterrupt:
             close(console, testing=False)
 
+
+def new_printer(console: Console) -> printer.Usb:
+    p: printer.Usb
+
+    console.clear()
+    console.show_cursor(False)
+    console.print(Rule("[bold yellow]set up the printer !! [/]", style=Style(color="yellow")))
+    console.print("the printer settings file (.printer) has not been detected in your current directory.\npick the device that looks right to you, and we'll set it up !!\n", justify="center")
+    console.print("press enter to continue.", justify="center")
+
+    # wait until user presses enter or q to exit
+    while True:
+        try:
+            read = readkey() 
+            if read == key.ENTER: break
+            elif read == "q": close(console, testing=False)
+        except KeyboardInterrupt:
+            close(console, testing=False)
+    
+    
+    console.clear()
+    console.show_cursor(True)
+
+    # find all usb devices plugged in right now.
+    all_devs = usb.core.find(find_all=True)
+    usable_devs = []
+    for dev in all_devs:
+        try:
+            # if these values can't be found, it errors out and the device is thrown as unusable.
+            dev.idVendor
+            dev.idProduct 
+            usb.util.get_string(dev, dev.iProduct)
+            usb.util.get_string(dev, dev.iManufacturer)
+            usable_devs.append(dev)
+        except:
+            continue
+
+    if all_devs is None: close(console, err="[bold red]no usb devices found !! exiting.[/]", testing=False)
+    
+    selected_device = None
+    # if there is only one option, choose that one.
+    if len(usable_devs) == 1: 
+        selected_device = {
+            "idVendor": int(hex(usable_devs[0].idVendor), 16),
+            "idProduct": int(hex(usable_devs[0].idProduct), 16)
+        }
+    else:
+            
+        # list the usable devices and prompt the user to choose a suitable device.
+        for i, dev in enumerate(usable_devs, start=1):
+            manufacturer = usb.util.get_string(dev, dev.iManufacturer)
+            dev_name = usb.util.get_string(dev, dev.iProduct)
+            console.print(f"{i}. Device: {manufacturer} - {dev_name} ")
+        
+        console.print(f"pick a device !! (1-{len(usable_devs)}) [rgb(150,150,150) s](or press q to quit)[/]")
+        
+        # wait until user has made a choice.
+        while True:
+            try: 
+                read = readkey()
+                if read == "q": close(console, testing=False)
+
+                # convert into array index.
+                read = int(read)
+                if read - 1 > len(usable_devs) - 1 or read - 1 < 0: continue # index out of bounds
+
+                # no errors !! save it as the selected device.
+                selected_device = {
+                    "idVendor": int(hex(usable_devs[read - 1].idVendor), 16), 
+                    "idProduct": int(hex(usable_devs[read - 1].idProduct), 16)
+                }
+
+                break
+            except ValueError or IndexError:
+                console.print(Rule("", style=Style(color="red")))
+                console.print("[bold red]the value you typed has an incorrect format. try again !! [/]")
+                console.print(Rule("", style=Style(color="red")))
+                continue
+            except KeyboardInterrupt:
+                close(console, testing=False)
+    console.clear()
+
+    # test the printer. 
+    p = printer.Usb(selected_device.get("idVendor"), selected_device.get("idProduct"))
+    test_printer_conditions(console, p)
+
+    # yay, it hasn't exited after using the test_printer_conditions function. save it !!
+
+    with open("./.printer", 'a') as f:
+        f.write(f'{selected_device.get("idVendor")},{selected_device.get("idProduct")}')
+        f.close()
+    
+    console.clear()
+    console.print("[bold green]printer is detected !!\npress any key to start the program !!\n", justify="center")
+    console.print("[rgb(150,150,150) s]or press q to quit.[/]", justify="center")
+    if readkey() == "q": close(console, testing=False)
+    return p
 
 def show_tutorial(console: Console):
     console.clear()
