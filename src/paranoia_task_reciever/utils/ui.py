@@ -70,7 +70,7 @@ def new_printer(console: Console) -> printer.Usb:
         except:
             continue
 
-    if all_devs is None: close(console, err="[bold red]no usb devices found !! exiting.[/]", testing=False)
+    if usable_devs is None: close(console, err="[bold red]no usb devices found !! exiting.[/]", testing=False)
     
     selected_device = None
     # if there is only one option, choose that one.
