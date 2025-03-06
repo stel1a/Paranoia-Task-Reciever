@@ -75,6 +75,10 @@ def new_printer(console: Console) -> printer.Usb:
     selected_device = None
     # if there is only one option, choose that one.
     if len(usable_devs) == 1: 
+        console.print(f"[bold yellow]only one device was detected !! would you like to use ({usb.util.get_string(usable_devs[0], usable_devs[0].iManufacturer)} - {usb.util.get_string(usable_devs[0], usable_devs[0].iProduct)}) ?? :o[/]")
+        console.print("\npress [bold](y)[/] to continue anyway, press any other key to exit.")
+        if readkey() != "y": close(console, testing=False)
+        
         selected_device = {
             "idVendor": int(hex(usable_devs[0].idVendor), 16),
             "idProduct": int(hex(usable_devs[0].idProduct), 16)
