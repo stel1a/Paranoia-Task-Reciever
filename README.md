@@ -10,6 +10,11 @@ a lot of the game requires giving players tasks and passing notes to each other.
 3. `pip install .` (create a python venv first if you need to)
 4.  start the script by running `paranoia` in the terminal :3c.
 
+(if the printer isn't being detected, try adding usbutils on windows, and changing udev rules on *NIX devices, example below)
+
+`SUBSYSTEM=="usb", ATTRS{idVendor}=="04b8", ATTRS{idProduct}=="0202", MODE="0666", GROUP="uucp"`
+(get the vendor id and product from lsusb, and if you don't have uucp as a valid group, try dialout instead !!)
+
 # Dependencies
 * python-escpos (python-escpos[all])
 * python-rich (tui)
